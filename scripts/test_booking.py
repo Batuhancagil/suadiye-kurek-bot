@@ -63,6 +63,12 @@ def main() -> int:
     if result == BookResult.ALREADY_BOOKED:
         print("Zaten kayıtlı — pipeline OK.")
         return 0
+    if result == BookResult.NOT_OPEN:
+        print("Henüz açılmadı — bot doğru davrandı (4 gün kuralı).")
+        return 0
+    if result == BookResult.FULL:
+        print("Ders dolu.")
+        return 0
     if result in (BookResult.LOGIN_FAILED, BookResult.ERROR):
         notify_error(display, result.value)
     return 1
