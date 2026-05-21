@@ -119,11 +119,27 @@ gh workflow run production.yml -f mode=poll
 gh workflow run production.yml -f mode=burst-tuesday
 ```
 
-### Cron çalışıyor mu?
+### Zamanlama (Türkiye saati)
 
-Actions → run listesinde **Scheduled** (takvim ikonu) ve `event: schedule` görünmeli.
+Tüm saatler **TRT (UTC+3)** için tablo: [docs/CRON-TRT.md](docs/CRON-TRT.md)
 
-Görünmüyorsa: https://github.com/settings/actions → **Allow all actions and reusable workflows** ve scheduled actions açık olsun. Repo **public** olmalı.
+GitHub cron **UTC** çalışır; burst saatleri TRT’ye göre ayarlandı.
+
+### Scheduled run yok mu? (sık görülen)
+
+Actions’ta **Schedule Poll** / **Schedule Burst** altında `Scheduled` hiç yoksa GitHub scheduler hesabında tetiklenmiyor olabilir (repo public olsa bile).
+
+**Çözüm (önerilen):** Ücretsiz dış cron → [docs/DIS-CRON-KURULUM.md](docs/DIS-CRON-KURULUM.md)  
+- Poll: **30 dk**, saat dilimi **Europe/Istanbul**  
+- Burst: Cuma/Pazar/Salı **06:55 veya 07:55 TRT**
+
+Dış cron `workflow_dispatch` tetikler — listede “Manually run” görünür, **bu normal**.
+
+Hızlı test (PAT ile):
+```bash
+chmod +x scripts/trigger_workflow.sh
+GITHUB_TOKEN=ghp_xxx ./scripts/trigger_workflow.sh schedule-poll.yml
+```
 
 **Manuel dry-run (GitHub):** Actions → **Burst Rezervasyon** → **Run workflow** → slot seç.
 

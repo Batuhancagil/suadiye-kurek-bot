@@ -227,7 +227,14 @@ def main(argv: list[str] | None = None) -> int:
 
     headless = not args.headed and os.environ.get("HEADLESS", "1") != "0"
 
-    logging.info("Mod: %s, slotlar: %s, config: %s", args.mode, args.slot, cfg)
+    now_trt = datetime.now(TRT).strftime("%d.%m.%Y %H:%M TRT")
+    logging.info(
+        "Mod: %s, slotlar: %s, config: %s, zaman: %s",
+        args.mode,
+        args.slot,
+        cfg,
+        now_trt,
+    )
 
     if args.mode == "burst":
         return run_burst(slots, cfg, dry_run=args.dry_run, headless=headless)
