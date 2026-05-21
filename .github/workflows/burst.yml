@@ -1,10 +1,7 @@
 name: Burst Rezervasyon
 
+# Cron: schedule-burst.yml — bu dosya yalnızca manuel test
 on:
-  schedule:
-    - cron: "55 3 * * 5"
-    - cron: "55 3 * * 0"
-    - cron: "55 4 * * 2"
   workflow_dispatch:
     inputs:
       slot:
