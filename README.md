@@ -104,20 +104,26 @@ TELEGRAM_CHAT_ID=111111111,222222222,-1001234567890
 
 GitHub Secret'ta da aynı şekilde tek satırda virgülle yazabilirsin.
 
-### 4. Workflow'lar (Production)
+### 4. Workflow'lar
 
 | Workflow | Tetik | Açıklama |
 |----------|-------|----------|
-| **Production** | Cron + manual | Ana prod — poll + burst bir arada |
-| `test-booking.yml` | Manual | Tek ders testi (tarih/saat seç) |
+| **Schedule Poll** | Cron `*/5` dk | Otomatik poll (gerçek kontrol 30 dk) |
+| **Schedule Burst** | Cron (açılış -5 dk) | Otomatik saldırı |
+| **Production** | Manuel | Elle poll/burst |
+| **Test Rezervasyon** | Manuel | Tek ders testi |
 
-**Production** manuel başlatma:
+Manuel:
 ```bash
 gh workflow run production.yml -f mode=poll
 gh workflow run production.yml -f mode=burst-tuesday
 ```
 
-Eski `burst.yml` / `poll.yml` yedek; prod için **Production** workflow'unu kullan.
+### Cron çalışıyor mu?
+
+Actions → run listesinde **Scheduled** (takvim ikonu) ve `event: schedule` görünmeli.
+
+Görünmüyorsa: https://github.com/settings/actions → **Allow all actions and reusable workflows** ve scheduled actions açık olsun. Repo **public** olmalı.
 
 **Manuel dry-run (GitHub):** Actions → **Burst Rezervasyon** → **Run workflow** → slot seç.
 

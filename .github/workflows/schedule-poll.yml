@@ -1,13 +1,14 @@
-name: Poll Rezervasyon
+# Otomatik poll — repo public olduktan sonra ayrı dosya (cron kaydı için)
+name: Schedule Poll
 
-# Cron schedule-poll.yml dosyasında — bu dosya sadece manuel test içindir
 on:
+  schedule:
+    - cron: "*/5 * * * *"
   workflow_dispatch:
-    inputs:
-      force:
-        description: "true = poll aralığını yoksay"
-        required: false
-        default: "false"
+
+concurrency:
+  group: schedule-poll
+  cancel-in-progress: false
 
 jobs:
   poll:
@@ -38,17 +39,12 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           HEADLESS: "1"
-        run: |
-          ARGS="--mode poll --slot all"
-          if [ "${{ github.event.inputs.force }}" = "true" ] || [ "${{ github.event.inputs.force }}" = "1" ]; then
-            ARGS="$ARGS --force-poll"
-          fi
-          python -m src.main $ARGS
+        run: python -m src.main --mode poll --slot all
 
       - name: Upload screenshots on failure
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: poll-screenshots
+          name: schedule-poll-screenshots
           path: screenshots/
           if-no-files-found: ignore

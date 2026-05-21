@@ -1,11 +1,7 @@
+# Manuel prod — otomatik cron için schedule-poll.yml ve schedule-burst.yml kullan
 name: Production
 
 on:
-  schedule:
-    - cron: "*/5 * * * *"
-    - cron: "55 3 * * 5"
-    - cron: "55 3 * * 0"
-    - cron: "55 4 * * 2"
   workflow_dispatch:
     inputs:
       mode:
@@ -16,10 +12,7 @@ on:
 jobs:
   poll:
     if: >-
-      github.event_name == 'schedule' && github.event.schedule == '*/5 * * * *' ||
-      github.event_name == 'workflow_dispatch' && (
-        github.event.inputs.mode == 'poll' || github.event.inputs.mode == ''
-      )
+      github.event.inputs.mode == 'poll' || github.event.inputs.mode == ''
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -53,9 +46,7 @@ jobs:
           if-no-files-found: ignore
 
   burst:
-    if: >-
-      github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.mode, 'burst') ||
-      github.event_name == 'schedule' && github.event.schedule != '*/5 * * * *'
+    if: startsWith(github.event.inputs.mode, 'burst')
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:

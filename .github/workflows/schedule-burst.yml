@@ -1,0 +1,66 @@
+# Otomatik burst — açılıştan 5 dk önce (UTC cron)
+name: Schedule Burst
+
+on:
+  schedule:
+    - cron: "55 3 * * 5"
+    - cron: "55 3 * * 0"
+    - cron: "55 4 * * 2"
+  workflow_dispatch:
+    inputs:
+      slot:
+        description: "tuesday | thursday | saturday | all"
+        default: "all"
+
+concurrency:
+  group: schedule-burst-${{ github.event.schedule || github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  burst:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Hedef slot
+        id: meta
+        run: |
+          SLOT="all"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            SLOT="${{ github.event.inputs.slot }}"
+          else
+            case "${{ github.event.schedule }}" in
+              "55 3 * * 5") SLOT="tuesday" ;;
+              "55 3 * * 0") SLOT="thursday" ;;
+              "55 4 * * 2") SLOT="saturday" ;;
+            esac
+          fi
+          echo "slot=$SLOT" >> "$GITHUB_OUTPUT"
+          echo "Burst slot=$SLOT schedule=${{ github.event.schedule }}"
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          playwright install chromium --with-deps
+
+      - name: Burst rezervasyon
+        env:
+          SUPERSAAS_EMAIL: ${{ secrets.SUPERSAAS_EMAIL }}
+          SUPERSAAS_PASSWORD: ${{ secrets.SUPERSAAS_PASSWORD }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          HEADLESS: "1"
+        run: python -m src.main --mode burst --slot ${{ steps.meta.outputs.slot }}
+
+      - name: Upload screenshots on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: schedule-burst-screenshots
+          path: screenshots/
+          if-no-files-found: ignore
