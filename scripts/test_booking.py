@@ -12,11 +12,13 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-for line in (ROOT / ".env").read_text(encoding="utf-8").splitlines():
-    line = line.strip()
-    if line and not line.startswith("#") and "=" in line:
-        k, v = line.split("=", 1)
-        os.environ[k.strip()] = v.strip().strip('"').strip("'")
+_env = ROOT / ".env"
+if _env.is_file():
+    for line in _env.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if line and not line.startswith("#") and "=" in line:
+            k, v = line.split("=", 1)
+            os.environ.setdefault(k.strip(), v.strip().strip('"').strip("'"))
 
 from playwright.sync_api import sync_playwright
 
@@ -58,9 +60,12 @@ def main() -> int:
         notify_booked(display)
         print("Telegram [OK] gönderildi.")
         return 0
+    if result == BookResult.ALREADY_BOOKED:
+        print("Zaten kayıtlı — pipeline OK.")
+        return 0
     if result in (BookResult.LOGIN_FAILED, BookResult.ERROR):
         notify_error(display, result.value)
-    return 1 if result != BookResult.BOOKED else 0
+    return 1
 
 
 if __name__ == "__main__":

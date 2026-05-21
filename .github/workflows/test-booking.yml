@@ -1,0 +1,55 @@
+name: Test Rezervasyon
+
+on:
+  workflow_dispatch:
+    inputs:
+      date:
+        description: "Ders tarihi (YYYY-MM-DD)"
+        required: true
+        default: "2026-05-24"
+      hour:
+        description: "Başlangıç saati (0-23)"
+        required: true
+        default: "18"
+      end_hour:
+        description: "Bitiş saati (boş = hour+1)"
+        required: false
+        default: ""
+
+jobs:
+  test-booking:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          playwright install chromium --with-deps
+
+      - name: Tek ders rezervasyon testi
+        env:
+          SUPERSAAS_EMAIL: ${{ secrets.SUPERSAAS_EMAIL }}
+          SUPERSAAS_PASSWORD: ${{ secrets.SUPERSAAS_PASSWORD }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          HEADLESS: "1"
+        run: |
+          ARGS="${{ github.event.inputs.date }} ${{ github.event.inputs.hour }}"
+          if [ -n "${{ github.event.inputs.end_hour }}" ]; then
+            ARGS="$ARGS --end-hour ${{ github.event.inputs.end_hour }}"
+          fi
+          python scripts/test_booking.py $ARGS
+
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-booking-screenshots
+          path: screenshots/
+          if-no-files-found: ignore
