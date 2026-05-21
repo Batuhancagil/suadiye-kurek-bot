@@ -6,9 +6,9 @@ on:
   workflow_dispatch:
     inputs:
       force:
-        description: "Poll aralığını yoksay (hemen çalış)"
-        type: boolean
-        default: false
+        description: "true = poll aralığını yoksay"
+        required: false
+        default: "false"
 
 jobs:
   poll:
@@ -41,7 +41,7 @@ jobs:
           HEADLESS: "1"
         run: |
           ARGS="--mode poll --slot all"
-          if [ "${{ github.event.inputs.force }}" = "true" ]; then
+          if [ "${{ github.event.inputs.force }}" = "true" ] || [ "${{ github.event.inputs.force }}" = "1" ]; then
             ARGS="$ARGS --force-poll"
           fi
           python -m src.main $ARGS

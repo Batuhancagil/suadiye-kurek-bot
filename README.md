@@ -104,12 +104,20 @@ TELEGRAM_CHAT_ID=111111111,222222222,-1001234567890
 
 GitHub Secret'ta da aynı şekilde tek satırda virgülle yazabilirsin.
 
-### 4. Workflow'lar
+### 4. Workflow'lar (Production)
 
 | Workflow | Tetik | Açıklama |
 |----------|-------|----------|
-| `burst.yml` | Cron + manual | Salı/Per/Cmt açılıştan 5 dk önce |
-| `poll.yml` | Her 5 dk | `poll_interval_minutes` ile gerçek sıklık |
+| **Production** | Cron + manual | Ana prod — poll + burst bir arada |
+| `test-booking.yml` | Manual | Tek ders testi (tarih/saat seç) |
+
+**Production** manuel başlatma:
+```bash
+gh workflow run production.yml -f mode=poll
+gh workflow run production.yml -f mode=burst-tuesday
+```
+
+Eski `burst.yml` / `poll.yml` yedek; prod için **Production** workflow'unu kullan.
 
 **Manuel dry-run (GitHub):** Actions → **Burst Rezervasyon** → **Run workflow** → slot seç.
 
