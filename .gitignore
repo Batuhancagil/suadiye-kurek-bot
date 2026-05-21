@@ -1,0 +1,10 @@
+venv/
+.venv/
+__pycache__/
+*.pyc
+.env
+config.json
+*.png
+screenshots/
+.poll_last_run
+.DS_Store

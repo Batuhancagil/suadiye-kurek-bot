@@ -1,0 +1,55 @@
+name: Poll Rezervasyon
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "Poll aralığını yoksay (hemen çalış)"
+        type: boolean
+        default: false
+
+jobs:
+  poll:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Poll state cache
+        uses: actions/cache@v4
+        with:
+          path: .poll_last_run
+          key: poll-last-run-${{ github.repository }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          playwright install chromium --with-deps
+
+      - name: Poll kontrol
+        env:
+          SUPERSAAS_EMAIL: ${{ secrets.SUPERSAAS_EMAIL }}
+          SUPERSAAS_PASSWORD: ${{ secrets.SUPERSAAS_PASSWORD }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          HEADLESS: "1"
+        run: |
+          ARGS="--mode poll --slot all"
+          if [ "${{ github.event.inputs.force }}" = "true" ]; then
+            ARGS="$ARGS --force-poll"
+          fi
+          python -m src.main $ARGS
+
+      - name: Upload screenshots on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: poll-screenshots
+          path: screenshots/
+          if-no-files-found: ignore

@@ -1,0 +1,6 @@
+{
+  "poll_interval_minutes": 30,
+  "burst_start_before_minutes": 5,
+  "burst_retry_interval_seconds": 8,
+  "burst_duration_minutes": 15
+}
