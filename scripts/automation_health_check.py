@@ -39,8 +39,8 @@ class HealthReport:
     def passed(self) -> bool:
         return all(c.ok for c in self.checks)
 
-    def add(self, name: str, ok: bool, detail: str = "") -> None:
-        self.checks.append(CheckResult(name, ok, detail))
+    def add(self, result: CheckResult) -> None:
+        self.checks.append(result)
 
 
 def _run_pytest() -> CheckResult:
@@ -155,19 +155,19 @@ def _check_required_files() -> CheckResult:
 
 def run_checks(mode: str) -> HealthReport:
     report = HealthReport(mode=mode)
-    report.add(*_check_required_files())
-    report.add(*_check_config())
-    report.add(*_check_imports())
+    report.add(_check_required_files())
+    report.add(_check_config())
+    report.add(_check_imports())
 
     if mode in ("weekly", "deploy"):
-        report.add(*_check_workflows())
-        report.add(*_check_slots_logic())
-        report.add(*_run_pytest())
+        report.add(_check_workflows())
+        report.add(_check_slots_logic())
+        report.add(_run_pytest())
 
     if mode == "smoke":
-        report.add(*_run_pytest())
+        report.add(_run_pytest())
 
-    report.add(*_check_telegram_env())
+    report.add(_check_telegram_env())
     return report
 
 
