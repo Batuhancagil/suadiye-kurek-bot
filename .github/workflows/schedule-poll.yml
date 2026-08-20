@@ -36,8 +36,7 @@ jobs:
         env:
           SUPERSAAS_EMAIL: ${{ secrets.SUPERSAAS_EMAIL }}
           SUPERSAAS_PASSWORD: ${{ secrets.SUPERSAAS_PASSWORD }}
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TELEGRAM_ENABLED: "0"
           HEADLESS: "1"
         run: python -m src.main --mode poll --slot all
 

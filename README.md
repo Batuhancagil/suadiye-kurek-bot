@@ -47,7 +47,7 @@ cp .env.example .env
 ## Yerel çalıştırma
 
 ```bash
-# Dry-run (Telegram + log, siteye minimum dokunuş burst'ta)
+# Dry-run (log, siteye minimum dokunuş burst'ta; Telegram varsayılan kapalı)
 python -m src.main --mode burst --slot tuesday --dry-run
 
 # Burst — tek slot
@@ -84,10 +84,12 @@ Repository → **Settings** → **Secrets and variables** → **Actions** → **
 |--------|----------|
 | `SUPERSAAS_EMAIL` | SuperSaaS giriş e-postası |
 | `SUPERSAAS_PASSWORD` | SuperSaaS şifresi |
-| `TELEGRAM_BOT_TOKEN` | BotFather token |
+| `TELEGRAM_BOT_TOKEN` | BotFather token (yalnızca Telegram'ı tekrar açarsan) |
 | `TELEGRAM_CHAT_ID` | Chat id — **birden fazla** için virgülle ayır: `123456789,-1009876543210` |
 
-İsteğe bağlı: `TELEGRAM_CHAT_IDS` (aynı format; `TELEGRAM_CHAT_ID` ile birleştirilir, tekrarlar elenir).
+Telegram **varsayılan kapalıdır**. Actions workflow'ları token geçirmez; `TELEGRAM_ENABLED=1` olmadan mesaj gitmez.
+
+İsteğe bağlı: `TELEGRAM_CHAT_IDS` (aynı format; `TELEGRAM_CHAT_ID` ile birleştirilir, tekrarlar elenir). `TELEGRAM_NOTIFY_ERRORS=1` olmadan `[ERR]` mesajı da gitmez.
 
 ### 3. Telegram bot kurulumu
 
@@ -155,9 +157,18 @@ GITHUB_TOKEN=ghp_xxx ./scripts/trigger_workflow.sh schedule-poll.yml
 
 ## Bildirimler
 
-- **Burst başlangıcı:** `[SALDIRI] ... denemeler başladı`
-- **Kayıt:** `[OK] ... rezerve edildi`
-- **Hata:** `[ERR] ...` (+ workflow artifact screenshot)
+Telegram **kapalı** (`TELEGRAM_ENABLED` yok veya `0`). Poll/burst yalnızca log yazar.
+
+Tekrar açmak için `.env` veya secret:
+
+```
+TELEGRAM_ENABLED=1
+TELEGRAM_NOTIFY_ERRORS=0
+```
+
+- **Burst başlangıcı:** `[SALDIRI] ... denemeler başladı` (yalnızca `TELEGRAM_ENABLED=1`)
+- **Kayıt:** `[OK] ... rezerve edildi` (yalnızca `TELEGRAM_ENABLED=1`)
+- **Hata:** `[ERR] ...` yalnızca `TELEGRAM_NOTIFY_ERRORS=1` iken (login fail spam'ini önlemek için kapalı)
 
 Yer yok / henüz açılmadı / zaten kayıtlı → sessiz (sadece log).
 

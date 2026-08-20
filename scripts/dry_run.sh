@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Yerel dry-run: Telegram + burst/poll akışı (siteye burst'ta dokunmaz)
+# Yerel dry-run: burst/poll akışı (siteye burst'ta dokunmaz; Telegram varsayılan kapalı)
 set -euo pipefail
 cd "$(dirname "$0")/.."
 PY="${PY:-./venv/bin/python}"

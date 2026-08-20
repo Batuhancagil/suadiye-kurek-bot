@@ -1,4 +1,4 @@
-"""Telegram bildirimleri (birden fazla chat id destekler)."""
+"""Telegram bildirimleri (varsayılan kapalı; birden fazla chat id destekler)."""
 
 from __future__ import annotations
 
@@ -10,6 +10,25 @@ from typing import Optional
 import requests
 
 logger = logging.getLogger(__name__)
+
+_TRUTHY = {"1", "true", "yes", "on"}
+
+
+def _env_flag(name: str, *, default: bool = False) -> bool:
+    raw = os.environ.get(name)
+    if raw is None or not raw.strip():
+        return default
+    return raw.strip().lower() in _TRUTHY
+
+
+def telegram_enabled() -> bool:
+    """Telegram gönderimi yalnızca TELEGRAM_ENABLED=1 iken açılır."""
+    return _env_flag("TELEGRAM_ENABLED", default=False)
+
+
+def telegram_notify_errors_enabled() -> bool:
+    """Hata mesajları ayrıca TELEGRAM_NOTIFY_ERRORS=1 ister (spam önleme)."""
+    return telegram_enabled() and _env_flag("TELEGRAM_NOTIFY_ERRORS", default=False)
 
 
 def _parse_chat_ids(raw: str) -> list[str]:
@@ -42,6 +61,10 @@ def _telegram_config() -> tuple[Optional[str], list[str]]:
 
 
 def send_telegram(message: str, *, dry_run: bool = False) -> bool:
+    if not telegram_enabled():
+        logger.info("Telegram kapalı (TELEGRAM_ENABLED değil); mesaj atlandı")
+        return False
+
     token, chat_ids = _telegram_config()
     if not token or not chat_ids:
         logger.warning("Telegram yapılandırılmamış; mesaj: %s", message)
@@ -89,6 +112,9 @@ def notify_booked(slot_name: str, *, dry_run: bool = False) -> None:
 
 
 def notify_error(context: str, detail: str, *, dry_run: bool = False) -> None:
+    if not telegram_notify_errors_enabled():
+        logger.info("Telegram hata bildirimi kapalı: %s — %s", context, detail)
+        return
     send_telegram(
         f"[ERR] {context}\n{detail}",
         dry_run=dry_run,

@@ -54,7 +54,7 @@ https://api.github.com/repos/Batuhancagil/suadiye-kurek-bot/actions/workflows/sc
 ## 5. Doğrulama
 
 - GitHub → **Actions** → **Schedule Poll** → yeni run, `workflow_dispatch` (dış cron da böyle görünür)
-- Telegram test mesajı / log
+- Log (Telegram varsayılan kapalı)
 
 ## Not
 
